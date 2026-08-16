@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Todo List</title>
+        <style>
+            * { box-sizing: border-box; }
+
+            body {
+                margin: 0;
+                font-family: Arial, Helvetica, sans-serif;
+                background: linear-gradient(135deg, #f4f7fb 0%, #ecfdf5 100%);
+                color: #1f2937;
+            }
+
+            .container {
+                max-width: 980px;
+                margin: 60px auto;
+                padding: 24px;
+            }
+
+            .app-box {
+                background: rgba(255, 255, 255, 0.8);
+                border: 1px solid rgba(148, 163, 184, 0.25);
+                border-radius: 22px;
+                box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+                padding: 28px;
+                backdrop-filter: blur(8px);
+            }
+
+            .topbar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+                margin-bottom: 24px;
+                flex-wrap: wrap;
+            }
+
+            .brand h1 {
+                margin: 0;
+                font-size: 2.2rem;
+                color: #111827;
+            }
+
+            .brand p {
+                margin: 6px 0 0;
+                color: #64748b;
+                font-size: 0.95rem;
+            }
+
+            .add-btn,
+            .action-btn,
+            .modal-btn {
+                border: none;
+                border-radius: 12px;
+                font-weight: 700;
+                cursor: pointer;
+                transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+            }
+
+            .add-btn {
+                background: linear-gradient(135deg, #2563eb, #4f46e5);
+                color: white;
+                padding: 12px 18px;
+                font-size: 0.95rem;
+                box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
+            }
+
+            .add-btn:hover,
+            .action-btn:hover,
+            .modal-btn:hover {
+                transform: translateY(-1px);
+            }
+
+            .todo-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                display: grid;
+                gap: 18px;
+            }
+
+            .todo-item {
+                display: flex;
+                gap: 18px;
+                background: #ffffff;
+                border: 1px solid #e5e7eb;
+                border-radius: 18px;
+                padding: 18px 20px;
+                box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+                align-items: flex-start;
+            }
+
+            .todo-check {
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                border: 2px solid #cbd5e1;
+                margin-top: 4px;
+                background: #f8fafc;
+                flex-shrink: 0;
+                cursor: pointer;
+            }
+
+            .todo-item.completed .todo-check {
+                background: #22c55e;
+                border-color: #22c55e;
+            }
+
+            .todo-item.completed .todo-headline,
+            .todo-item.completed .todo-title {
+                text-decoration: line-through;
+                color: #64748b;
+            }
+
+            .todo-main {
+                flex: 1;
+            }
+
+            .todo-headline {
+                margin: 0 0 8px;
+                font-size: 1.3rem;
+                color: #111827;
+            }
+
+            .todo-title {
+                margin: 0 0 12px;
+                color: #475569;
+                font-size: 1rem;
+                line-height: 1.5;
+            }
+
+            .meta-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+
+            .todo-date {
+                display: inline-block;
+                background: #eef2ff;
+                color: #4338ca;
+                padding: 6px 12px;
+                border-radius: 999px;
+                font-size: 0.78rem;
+                font-weight: 700;
+            }
+
+            .todo-actions {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+
+            .action-btn {
+                padding: 9px 14px;
+                font-size: 0.82rem;
+            }
+
+            .edit-btn {
+                background: #dcfce7;
+                color: #166534;
+            }
+
+            .delete-btn {
+                background: #fee2e2;
+                color: #b91c1c;
+            }
+
+            .todo-image {
+                width: 100%;
+                max-height: 240px;
+                object-fit: cover;
+                border-radius: 12px;
+                margin-top: 14px;
+                border: 1px solid #e5e7eb;
+            }
+
+            .empty-state {
+                text-align: center;
+                background: #ffffff;
+                color: #64748b;
+                border: 1px dashed #cbd5e1;
+                border-radius: 18px;
+                padding: 36px 20px;
+                font-size: 1rem;
+            }
+
+            .modal {
+                position: fixed;
+                inset: 0;
+                background: rgba(15, 23, 42, 0.45);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+
+            .modal.open {
+                display: flex;
+            }
+
+            .modal-card {
+                background: white;
+                width: min(100%, 520px);
+                border-radius: 20px;
+                padding: 24px;
+                box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
+            }
+
+            .modal-card h2 {
+                margin-top: 0;
+                margin-bottom: 18px;
+                color: #111827;
+            }
+
+            .form-group {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                margin-bottom: 16px;
+            }
+
+            .form-group label {
+                font-size: 0.9rem;
+                font-weight: 700;
+                color: #374151;
+            }
+
+            .form-group input,
+            .form-group textarea {
+                width: 100%;
+                border: 1px solid #d1d5db;
+                border-radius: 10px;
+                padding: 12px 14px;
+                font-size: 0.95rem;
+                font-family: inherit;
+            }
+
+            .form-group textarea {
+                min-height: 100px;
+                resize: vertical;
+            }
+
+            .modal-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 12px;
+                margin-top: 8px;
+            }
+
+            .modal-btn {
+                padding: 10px 16px;
+                font-size: 0.9rem;
+            }
+
+            .cancel-btn {
+                background: #e5e7eb;
+                color: #374151;
+            }
+
+            .save-btn {
+                background: linear-gradient(135deg, #16a34a, #22c55e);
+                color: white;
+            }
+
+            @media (max-width: 600px) {
+                .todo-item { flex-direction: column; }
+                .topbar { flex-direction: column; align-items: stretch; }
+                .add-btn { width: 100%; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="app-box">
+                <div class="topbar">
+                    <div class="brand">
+                        <h1>Todo List</h1>
+                        <p>Stay organized and keep your tasks moving.</p>
+                    </div>
+                    <button class="add-btn" type="button" id="add_button">+ Add Task</button>
+                </div>
+
+                {% if all_todo %}
+                    <ul class="todo-list" id="todo_list">
+                        {% for todo in all_todo %}
+                            <li class="todo-item" data-id="{{ todo.id }}" data-head_line="{{ todo.head_line|escapejs }}" data-title="{{ todo.title|escapejs }}">
+                                <div class="todo-check" aria-label="Mark task complete" title="Mark as complete"></div>
+                                <div class="todo-main">
+                                    <h2 class="todo-headline">{{ todo.head_line }}</h2>
+                                    <p class="todo-title">{{ todo.title }}</p>
+
+                                    <div class="meta-row">
+                                        <span class="todo-date">{{ todo.created_at }}</span>
+                                        <div class="todo-actions">
+                                            <button class="action-btn edit-btn" type="button">Edit</button>
+                                            <button class="action-btn delete-btn" type="button">Remove</button>
+                                        </div>
+                                    </div>
+
+                                    {% if todo.image_attched %}
+                                        <img class="todo-image" src="{{ todo.image_attched.url }}" alt="{{ todo.title }}" />
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state" id="empty_state">No tasks yet. Add your first task to get started.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="modal" id="task_modal" aria-hidden="true">
+            <div class="modal-card">
+                <h2 id="modal_title">Add Task</h2>
+                <form method="post" action="{% url 'add_todo' %}" enctype="multipart/form-data" id="task_form">
+                    {% csrf_token %}
+                    <input type="hidden" name="id" id="todo_id" value="" />
+
+                    <div class="form-group">
+                        {{ form.head_line.label_tag }}
+                        {{ form.head_line }}
+                        {{ form.head_line.errors }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.title.label_tag }}
+                        {{ form.title }}
+                        {{ form.title.errors }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.image_attched.label_tag }}
+                        {{ form.image_attched }}
+                        {{ form.image_attched.errors }}
+                    </div>
+
+                    <div class="modal-actions">
+                        <button class="modal-btn cancel-btn" type="button" id="cancel_modal">Cancel</button>
+                        <button class="modal-btn save-btn" type="submit">Save Task</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            const modal = document.getElementById('task_modal');
+            const addButton = document.getElementById('add_button');
+            const cancelModal = document.getElementById('cancel_modal');
+            const taskForm = document.getElementById('task_form');
+            const taskIdField = document.getElementById('todo_id');
+            const modalTitle = document.getElementById('modal_title');
+
+            function openModal() {
+                modal.classList.add('open');
+                modal.setAttribute('aria-hidden', 'false');
+            }
+
+            function closeModal() {
+                modal.classList.remove('open');
+                modal.setAttribute('aria-hidden', 'true');
+                taskForm.reset();
+                taskIdField.value = '';
+                modalTitle.textContent = 'Add Task';
+            }
+
+            addButton.addEventListener('click', () => {
+                modalTitle.textContent = 'Add Task';
+                taskForm.action = '{% url "add_todo" %}';
+                openModal();
+            });
+
+            cancelModal.addEventListener('click', closeModal);
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) closeModal();
+            });
+
+            document.addEventListener('click', async (event) => {
+                const removeButton = event.target.closest('.delete-btn');
+                const editButton = event.target.closest('.edit-btn');
+
+                if (removeButton) {
+                    const todoItem = removeButton.closest('.todo-item');
+                    const todoId = todoItem?.dataset.id;
+
+                    if (!todoId) return;
+
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                    const response = await fetch('{% url "remove_todo" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-CSRFToken': csrfToken,
+                        },
+                        body: new URLSearchParams({ id: todoId })
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.success) {
+                        todoItem.remove();
+                    } else {
+                        alert(result.message || 'Could not remove the task');
+                    }
+                }
+
+                if (editButton) {
+                    const todoItem = editButton.closest('.todo-item');
+                    const todoId = todoItem?.dataset.id;
+
+                    if (!todoId) return;
+
+                    const headLineField = document.getElementById('id_head_line');
+                    const titleField = document.getElementById('id_title');
+
+                    if (headLineField) headLineField.value = todoItem.dataset.head_line || '';
+                    if (titleField) titleField.value = todoItem.dataset.title || '';
+
+                    taskIdField.value = todoId;
+                    taskForm.action = '{% url "edit_todo" %}';
+                    modalTitle.textContent = 'Edit Task';
+                    openModal();
+                }
+            });
+
+            taskForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const formData = new FormData(taskForm);
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                const response = await fetch(taskForm.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const result = await response.json().catch(() => ({}));
+                    const message = result.message || result.errors ? 'Please check the form and try again.' : 'Something went wrong while saving the task.';
+                    alert(message);
+                }
+            });
+        </script>
+    </body>
+</html>
+
