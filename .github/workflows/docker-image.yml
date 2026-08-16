@@ -23,7 +23,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/todo-app:${{ github.sha }} .
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/todo-app:${{ github.sha }} ../
           docker tag ${{ secrets.DOCKER_REGISTRY }}/todo-app:${{ github.sha }} ${{ secrets.DOCKER_REGISTRY }}/todo-app:latest
 
       - name: Push Docker image
